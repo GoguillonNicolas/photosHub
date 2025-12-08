@@ -1,4 +1,7 @@
 Flask
-SQLAlchemy
+Flask-SQLAlchemy
 psycopg2-binary
-python-dotenv
+Flask-Login
+Flask-WTF
+Flask-Bcrypt
+email-validator

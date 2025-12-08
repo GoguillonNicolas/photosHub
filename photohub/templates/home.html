@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">Welcome to PhotoHub!</h1>
+        <p class="lead">Your new favorite place to store and share your photo albums.</p>
+        <hr class="my-4">
+        {% if current_user.is_authenticated %}
+            <p>Welcome back, {{ current_user.username }}!</p>
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="#" role="button">Go to your albums</a>
+            </p>
+        {% else %}
+            <p>Join now to start creating your own albums.</p>
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="{{ url_for('register') }}" role="button">Sign Up</a>
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
+            </p>
+        {% endif %}
+    </div>
+{% endblock content %}
