@@ -1,5 +1,6 @@
 from datetime import datetime
 from . import db
+from flask_login import UserMixin
 
 # Table d'association pour le partage d'albums (Many-to-Many)
 album_shares = db.Table('album_shares',
@@ -8,7 +9,7 @@ album_shares = db.Table('album_shares',
     db.Column('shared_at', db.DateTime, default=datetime.utcnow)
 )
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
