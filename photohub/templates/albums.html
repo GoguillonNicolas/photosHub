@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Albums</h1>
+        <a href="{{ url_for('new_album') }}" class="btn btn-primary">Create New Album</a>
+    </div>
+
+    {% if albums %}
+        <div class="list-group">
+            {% for album in albums %}
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ album.title }}</h5>
+                        <small>{{ album.created_at.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <p class="mb-1">{{ album.description or 'No description' }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You don't have any albums yet. <a href="{{ url_for('new_album') }}" class="alert-link">Create your first one!</a>
+        </div>
+    {% endif %}
+{% endblock content %}

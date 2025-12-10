@@ -7,7 +7,7 @@
         {% if current_user.is_authenticated %}
             <p>Welcome back, {{ current_user.username }}!</p>
             <p class="lead">
-                <a class="btn btn-primary btn-lg" href="#" role="button">Go to your albums</a>
+                <a class="btn btn-primary btn-lg" href="{{ url_for('albums') }}" role="button">Go to your albums</a>
             </p>
         {% else %}
             <p>Join now to start creating your own albums.</p>
