@@ -1,7 +1,7 @@
 import os
 import secrets
 from PIL import Image
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from photohub import app, db, bcrypt
 from photohub.forms import RegistrationForm, LoginForm, AlbumForm, PhotoForm
 from photohub.models import User, Album, Photo
@@ -20,6 +20,13 @@ def save_picture(form_picture):
     i.save(picture_path)
 
     return picture_fn
+
+def delete_picture_file(filename):
+    picture_path = os.path.join(app.root_path, 'static/uploads', filename)
+    try:
+        os.remove(picture_path)
+    except OSError as e:
+        flash(f'Error deleting file: {e}', 'danger')
 
 @app.route("/")
 @app.route("/home")
@@ -58,6 +65,19 @@ def album(album_id):
             flash('Your photo has been added!', 'success')
             return redirect(url_for('album', album_id=album.id))
     return render_template('album_detail.html', title=album.title, album=album, form=form)
+
+@app.route("/photo/<int:photo_id>/delete", methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if photo.album.owner != current_user:
+        abort(403)
+    album_id = photo.album.id
+    delete_picture_file(photo.filename)
+    db.session.delete(photo)
+    db.session.commit()
+    flash('Your photo has been deleted!', 'success')
+    return redirect(url_for('album', album_id=album_id))
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
