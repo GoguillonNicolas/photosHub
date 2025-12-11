@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container">
+        <h1 class="mt-4">{{ album.title }}</h1>
+        <p class="lead">{{ album.description }}</p>
+
+        <hr>
+
+        <!-- Display Photos -->
+        <h2>Photos</h2>
+        <div class="row text-center text-lg-left">
+            {% if album.photos %}
+                {% for photo in album.photos %}
+                    <div class="col-lg-3 col-md-4 col-6">
+                        <a href="#" class="d-block mb-4 h-100">
+                            <img class="img-fluid img-thumbnail" src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="{{ photo.caption }}">
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col">
+                    <p>This album has no photos yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <!-- Upload Photo Form -->
+        <div class="card my-4">
+            <h5 class="card-header">Add a Photo</h5>
+            <div class="card-body">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <fieldset class="form-group">
+                        <div class="form-group">
+                            {{ form.photo.label(class="form-control-label") }}
+                            {{ form.photo(class="form-control-file") }}
+                            {% if form.photo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.photo.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.caption.label(class="form-control-label") }}
+                            {{ form.caption(class="form-control", rows=3) }}
+                        </div>
+                    </fieldset>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
