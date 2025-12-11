@@ -79,6 +79,22 @@ def delete_photo(photo_id):
     flash('Your photo has been deleted!', 'success')
     return redirect(url_for('album', album_id=album_id))
 
+@app.route("/album/<int:album_id>/delete", methods=['POST'])
+@login_required
+def delete_album(album_id):
+    album = Album.query.get_or_404(album_id)
+    if album.owner != current_user:
+        abort(403)
+    
+    # Delete all photo files associated with the album
+    for photo in album.photos:
+        delete_picture_file(photo.filename)
+        
+    db.session.delete(album)
+    db.session.commit()
+    flash('Your album and all its photos have been deleted!', 'success')
+    return redirect(url_for('albums'))
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
