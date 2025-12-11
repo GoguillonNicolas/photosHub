@@ -21,3 +21,6 @@ docker-compose.override.yml
 
 # Fichiers de configuration de l'IDE
 .idea/
+
+# Dossier pour les fichiers uploadés
+/photohub/static/uploads/

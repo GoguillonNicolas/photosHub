@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div>
+                <h1>{{ album.title }}</h1>
+                <p class="lead">{{ album.description }}</p>
+            </div>
+            {% if album.owner == current_user %}
+            <div>
+                <a href="#" class="btn btn-secondary">Edit Album</a>
+                <form action="{{ url_for('delete_album', album_id=album.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this album and all its photos?');">Delete Album</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <!-- Display Photos -->
+        <h2>Photos</h2>
+        <div class="row text-center text-lg-left">
+            {% if album.photos %}
+                {% for photo in album.photos %}
+                    <div class="col-lg-3 col-md-4 col-6">
+                        <div class="img-container">
+                            <a href="{{ url_for('static', filename='uploads/' + photo.filename) }}" data-toggle="lightbox" data-gallery="gallery">
+                                <img class="img-fluid img-thumbnail" src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="{{ photo.caption }}">
+                            </a>
+                            <form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST" class="position-absolute" style="top: 5px; right: 5px;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this photo?');">&times;</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col">
+                    <p>This album has no photos yet.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <!-- Upload Photo Form -->
+        <div class="card my-4">
+            <h5 class="card-header">Add a Photo</h5>
+            <div class="card-body">
+                <form method="POST" action="" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <fieldset class="form-group">
+                        <div class="form-group">
+                            {{ form.photo.label(class="form-control-label") }}
+                            {{ form.photo(class="form-control-file") }}
+                            {% if form.photo.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.photo.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form.caption.label(class="form-control-label") }}
+                            {{ form.caption(class="form-control", rows=3) }}
+                        </div>
+                    </fieldset>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
