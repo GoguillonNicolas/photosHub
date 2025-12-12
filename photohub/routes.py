@@ -36,8 +36,11 @@ def home():
 @app.route("/albums")
 @login_required
 def albums():
-    user_albums = Album.query.filter_by(owner=current_user).all()
-    return render_template('albums.html', title='My Albums', albums=user_albums)
+    owned_albums = current_user.owned_albums
+    shared_albums = current_user.shared_with_me
+    all_albums = list(set(owned_albums + shared_albums))
+    all_albums.sort(key=lambda x: x.created_at, reverse=True)
+    return render_template('albums.html', title='My Albums', albums=all_albums)
 
 @app.route("/album/new", methods=['GET', 'POST'])
 @login_required
@@ -94,6 +97,36 @@ def delete_album(album_id):
     db.session.commit()
     flash('Your album and all its photos have been deleted!', 'success')
     return redirect(url_for('albums'))
+
+@app.route("/album/<int:album_id>/share", methods=['POST'])
+@login_required
+def share_album(album_id):
+    album = Album.query.get_or_404(album_id)
+    if album.owner != current_user:
+        abort(403)
+    
+    email = request.form.get('email')
+    if not email:
+        flash('Email is required.', 'danger')
+        return redirect(url_for('album', album_id=album.id))
+
+    user_to_share_with = User.query.filter_by(email=email).first()
+    if not user_to_share_with:
+        flash('User with that email does not exist.', 'danger')
+        return redirect(url_for('album', album_id=album.id))
+
+    if user_to_share_with == current_user:
+        flash('You cannot share an album with yourself.', 'info')
+        return redirect(url_for('album', album_id=album.id))
+
+    if user_to_share_with in album.shared_with_users:
+        flash('This album is already shared with this user.', 'info')
+        return redirect(url_for('album', album_id=album.id))
+
+    album.shared_with_users.append(user_to_share_with)
+    db.session.commit()
+    flash(f'Album shared with {user_to_share_with.username}.', 'success')
+    return redirect(url_for('album', album_id=album.id))
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():

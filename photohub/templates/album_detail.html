@@ -72,5 +72,34 @@
                 </form>
             </div>
         </div>
+
+        <!-- Share Album Section -->
+        {% if album.owner == current_user %}
+        <hr>
+        <div class="card my-4">
+            <h5 class="card-header">Share Album</h5>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('share_album', album_id=album.id) }}">
+                    <div class="input-group">
+                        <input type="email" name="email" class="form-control" placeholder="Recipient's email" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="submit">Share</button>
+                        </div>
+                    </div>
+                </form>
+                <hr>
+                <h6>Shared with:</h6>
+                {% if album.shared_with_users %}
+                    <ul class="list-group">
+                        {% for user in album.shared_with_users %}
+                            <li class="list-group-item">{{ user.username }} ({{ user.email }})</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>This album has not been shared with anyone yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 {% endblock content %}

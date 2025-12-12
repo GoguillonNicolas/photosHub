@@ -40,3 +40,7 @@ class PhotoForm(FlaskForm):
     photo = FileField('Photo', validators=[DataRequired(), FileAllowed(['jpg', 'png', 'jpeg', 'gif'])])
     caption = TextAreaField('Caption')
     submit = SubmitField('Upload Photo')
+
+class ShareAlbumForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Share')
