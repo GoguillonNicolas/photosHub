@@ -1,0 +1,22 @@
+{% extends "layout.html" %} {% block content %}
+<a href="{{ url_for('album', album_id=photo.album.id) }}">Back to Album</a>
+<h1>{{ photo.caption }}</h1>
+
+{% if photo.album.owner == current_user %}
+<form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST">
+    {{ form.hidden_tag() }}
+    <button class="btn btn-danger">Delete Photo</button>
+</form>
+{% endif %}
+<h2>Comments</h2>
+{% for comment in photo.comments %}
+    <div>
+        <strong>{{ comment.author.username }}</strong> {{ comment.date_posted.strftime('%Y-%m-%d') }}
+        <p>{{ comment.content }}</p>
+    </div>
+{% else %}
+    <p>No comments yet. Be the first to comment!</p>
+{% endfor %}
+{{ comment_form.hidden_tag() }}
+{{ comment_form.content(class="form-control", rows="3", placeholder="Add a comment...") }}
+{% endblock content %}

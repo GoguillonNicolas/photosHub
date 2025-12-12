@@ -2,10 +2,10 @@ import os
 import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request, abort
-from photohub import app, db, bcrypt
-from photohub.forms import RegistrationForm, LoginForm, AlbumForm, PhotoForm
-from photohub.models import User, Album, Photo
 from flask_login import login_user, current_user, logout_user, login_required
+from photohub import app, db, bcrypt
+from photohub.forms import RegistrationForm, LoginForm, AlbumForm, PhotoForm, CommentForm
+from photohub.models import User, Album, Photo, Comment
 
 def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
@@ -28,6 +28,18 @@ def delete_picture_file(filename):
     except OSError as e:
         flash(f'Error deleting file: {e}', 'danger')
 
+@app.route("/photo/<int:photo_id>/comment", methods=['POST'])
+@login_required
+def add_comment(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(content=form.content.data, photo_id=photo.id, user_id=current_user.id)
+        db.session.add(comment)
+        db.session.commit()
+        flash('Your comment has been added!', 'success')
+    return redirect(url_for('album', album_id=photo.album_id))
+
 @app.route("/")
 @app.route("/home")
 def home():
@@ -36,11 +48,8 @@ def home():
 @app.route("/albums")
 @login_required
 def albums():
-    owned_albums = current_user.owned_albums
-    shared_albums = current_user.shared_with_me
-    all_albums = list(set(owned_albums + shared_albums))
-    all_albums.sort(key=lambda x: x.created_at, reverse=True)
-    return render_template('albums.html', title='My Albums', albums=all_albums)
+    user_albums = Album.query.filter_by(owner=current_user).all()
+    return render_template('albums.html', title='My Albums', albums=user_albums)
 
 @app.route("/album/new", methods=['GET', 'POST'])
 @login_required
@@ -59,15 +68,21 @@ def new_album():
 def album(album_id):
     album = Album.query.get_or_404(album_id)
     form = PhotoForm()
-    if form.validate_on_submit():
-        if form.photo.data:
-            picture_file = save_picture(form.photo.data)
-            photo = Photo(album_id=album.id, filename=picture_file, caption=form.caption.data)
-            db.session.add(photo)
-            db.session.commit()
-            flash('Your photo has been added!', 'success')
-            return redirect(url_for('album', album_id=album.id))
+    if form.validate_on_submit() and form.photo.data:
+        picture_file = save_picture(form.photo.data)
+        photo = Photo(album_id=album.id, filename=picture_file, caption=form.caption.data)
+        db.session.add(photo)
+        db.session.commit()
+        flash('Your photo has been added!', 'success')
+        return redirect(url_for('album', album_id=album.id))
     return render_template('album_detail.html', title=album.title, album=album, form=form)
+
+@app.route('/photo/<int:photo_id>')
+@login_required
+def photo_detail(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    comment_form = CommentForm()
+    return render_template('photo_detail.html', title=photo.caption, photo=photo, comment_form=comment_form)
 
 @app.route("/photo/<int:photo_id>/delete", methods=['POST'])
 @login_required
@@ -97,36 +112,6 @@ def delete_album(album_id):
     db.session.commit()
     flash('Your album and all its photos have been deleted!', 'success')
     return redirect(url_for('albums'))
-
-@app.route("/album/<int:album_id>/share", methods=['POST'])
-@login_required
-def share_album(album_id):
-    album = Album.query.get_or_404(album_id)
-    if album.owner != current_user:
-        abort(403)
-    
-    email = request.form.get('email')
-    if not email:
-        flash('Email is required.', 'danger')
-        return redirect(url_for('album', album_id=album.id))
-
-    user_to_share_with = User.query.filter_by(email=email).first()
-    if not user_to_share_with:
-        flash('User with that email does not exist.', 'danger')
-        return redirect(url_for('album', album_id=album.id))
-
-    if user_to_share_with == current_user:
-        flash('You cannot share an album with yourself.', 'info')
-        return redirect(url_for('album', album_id=album.id))
-
-    if user_to_share_with in album.shared_with_users:
-        flash('This album is already shared with this user.', 'info')
-        return redirect(url_for('album', album_id=album.id))
-
-    album.shared_with_users.append(user_to_share_with)
-    db.session.commit()
-    flash(f'Album shared with {user_to_share_with.username}.', 'success')
-    return redirect(url_for('album', album_id=album.id))
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():

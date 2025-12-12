@@ -41,6 +41,6 @@ class PhotoForm(FlaskForm):
     caption = TextAreaField('Caption')
     submit = SubmitField('Upload Photo')
 
-class ShareAlbumForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    submit = SubmitField('Share')
+class CommentForm(FlaskForm):
+    content = TextAreaField('Comment', validators=[DataRequired()])
+    submit = SubmitField('Post Comment')
