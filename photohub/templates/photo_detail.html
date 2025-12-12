@@ -1,22 +1,36 @@
 {% extends "layout.html" %} {% block content %}
 <a href="{{ url_for('album', album_id=photo.album.id) }}">Back to Album</a>
 <h1>{{ photo.caption }}</h1>
+<img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="{{ photo.caption }}" class="img-fluid">
 
 {% if photo.album.owner == current_user %}
-<form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST">
-    {{ form.hidden_tag() }}
-    <button class="btn btn-danger">Delete Photo</button>
+<form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST" style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <button type="submit" class="btn btn-danger btn-sm">Delete Photo</button>
 </form>
 {% endif %}
 <h2>Comments</h2>
 {% for comment in photo.comments %}
     <div>
-        <strong>{{ comment.author.username }}</strong> {{ comment.date_posted.strftime('%Y-%m-%d') }}
+        <strong>{{ comment.author.username }}</strong> <small class="text-muted">{{ comment.created_at.strftime('%Y-%m-%d') }}</small>
         <p>{{ comment.content }}</p>
     </div>
 {% else %}
     <p>No comments yet. Be the first to comment!</p>
 {% endfor %}
-{{ comment_form.hidden_tag() }}
-{{ comment_form.content(class="form-control", rows="3", placeholder="Add a comment...") }}
+
+<hr>
+
+<form method="POST" action="{{ url_for('add_comment', photo_id=photo.id) }}">
+    {{ comment_form.hidden_tag() }}
+    <fieldset class="form-group">
+        <legend>Add a Comment</legend>
+        <div class="form-group">
+            {{ comment_form.content(class="form-control", rows="3") }}
+        </div>
+    </fieldset>
+    <div class="form-group">
+        {{ comment_form.submit(class="btn btn-outline-info") }}
+    </div>
+</form>
 {% endblock content %}
