@@ -44,3 +44,7 @@ class PhotoForm(FlaskForm):
 class CommentForm(FlaskForm):
     content = TextAreaField('Comment', validators=[DataRequired()])
     submit = SubmitField('Post Comment')
+
+class ShareAlbumForm(FlaskForm):
+    email = StringField('User\'s Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Share')

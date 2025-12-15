@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mt-4">
         <h1>My Albums</h1>
         <a href="{{ url_for('new_album') }}" class="btn btn-primary">Create New Album</a>
     </div>
-
-    {% if albums %}
+    <hr>
+    {% if owned_albums %}
         <div class="list-group">
-            {% for album in albums %}
+            {% for album in owned_albums %}
                 <a href="{{ url_for('album', album_id=album.id) }}" class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">{{ album.title }}</h5>
@@ -20,6 +20,26 @@
     {% else %}
         <div class="alert alert-info">
             You don't have any albums yet. <a href="{{ url_for('new_album') }}" class="alert-link">Create your first one!</a>
+        </div>
+    {% endif %}
+
+    <h1 class="mt-5">Shared with Me</h1>
+    <hr>
+    {% if shared_albums %}
+        <div class="list-group">
+            {% for album in shared_albums %}
+                <a href="{{ url_for('album', album_id=album.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ album.title }}</h5>
+                        <small>Shared by {{ album.owner.username }}</small>
+                    </div>
+                    <p class="mb-1">{{ album.description or 'No description' }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No albums have been shared with you yet.
         </div>
     {% endif %}
 {% endblock content %}
